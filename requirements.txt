@@ -9,4 +9,4 @@ plotnine
 scipy
 pingouin
 statistics
-mysql
+mysql.connector
