@@ -10,3 +10,4 @@ scipy
 pingouin
 statistics
 mysql.connector
+pymongo
