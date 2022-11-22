@@ -9,3 +9,4 @@ plotnine
 scipy
 pingouin
 statistics
+mysql
