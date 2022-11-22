@@ -1,26 +1,27 @@
 # streamlit_app.py
 
 import streamlit as st
-import mysql.connector
+import pymongo
 
 # Initialize connection.
 # Uses st.experimental_singleton to only run once.
 @st.experimental_singleton
 def init_connection():
-    return mysql.connector.connect(**st.secrets["mysql"])
+    return pymongo.MongoClient(**st.secrets["mongo"])
 
-conn = init_connection()
+client = init_connection()
 
-# Perform query.
+# Pull data from the collection.
 # Uses st.experimental_memo to only rerun when the query changes or after 10 min.
 @st.experimental_memo(ttl=600)
-def run_query(query):
-    with conn.cursor() as cur:
-        cur.execute(query)
-        return cur.fetchall()
+def get_data():
+    db = client.mydb
+    items = db.mycollection.find()
+    items = list(items)  # make hashable for st.experimental_memo
+    return items
 
-rows = run_query("SELECT * from mytable;")
+items = get_data()
 
 # Print results.
-for row in rows:
-    st.write(f"{row[0]} has a :{row[1]}:")
+for item in items:
+    st.write(f"{item['name']} has a :{item['pet']}:")
