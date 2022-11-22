@@ -1,29 +1,26 @@
-# myFirstStreamlitApp.py
-  
-#import the library
+# streamlit_app.py
+
 import streamlit as st
-import datetime
+import mysql.connector
 
-# Use st.title("") para adicionar um TÍTULO ao seu Web app
-st.title("Prof. Massaki de O. Igarashi")
+# Initialize connection.
+# Uses st.experimental_singleton to only run once.
+@st.experimental_singleton
+def init_connection():
+    return mysql.connector.connect(**st.secrets["mysql"])
 
-# Use st.header("") para adicionar um CABEÇALHO ao seu Web app
-st.header("Teste de Cabeçalho")
+conn = init_connection()
 
-# Use st.subheader("") para adicionar um SUB CABEÇALHO ao seu Web app
-st.subheader("Bem vindos!")
+# Perform query.
+# Uses st.experimental_memo to only rerun when the query changes or after 10 min.
+@st.experimental_memo(ttl=600)
+def run_query(query):
+    with conn.cursor() as cur:
+        cur.execute(query)
+        return cur.fetchall()
 
-# Use st.write("") para adicionar um texto ao seu Web app
-st.write("Como já deve ter percebido, o método st.write() é usado para escrita de texto e informações gerais!")
+rows = run_query("SELECT * from mytable;")
 
-st.info("Como já deve ter percebido, o método st.write() é usado para escrita de texto e informações gerais!")
-
-st.warning("Como já deve ter percebido, o método st.write() é usado para escrita de texto e informações gerais!")
-
-start, end = st.date_input(label='Intervalo de Data: ',
-              value=(datetime.datetime(year=2022, month=5, day=20, hour=16, minute=30), 
-                     datetime.datetime(year=2022, month=5, day=30, hour=16, minute=30)),
-              key='#date_range',
-              help="Data e Início e Término",
-              on_change=lambda : st.write("Configure a Data de Início e de Término!"))
-st.write('Início: ', start, "Término: ", end)
+# Print results.
+for row in rows:
+    st.write(f"{row[0]} has a :{row[1]}:")
